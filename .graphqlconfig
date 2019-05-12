@@ -1,0 +1,20 @@
+{
+  "schemaPath": "schema.graphql",
+  "extensions": {
+    "endpoints": {
+      "Default Introspection Endpoint": {
+        "url": "http://localhost:4000/graphql",
+        "introspect": true,
+        "headers": {
+          "user-agent": "JS GraphQL"
+        }
+      },
+      "Default (http://www.xread.yuanjingtech.com/graphql)": {
+        "url": "http://www.xread.yuanjingtech.com/graphql",
+        "headers": {
+          "user-agent": "JS GraphQL"
+        }
+      }
+    }
+  }
+}
