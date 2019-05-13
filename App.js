@@ -2,11 +2,50 @@ import React from 'react';
 import { Platform, StatusBar, StyleSheet, View } from 'react-native';
 import { AppLoading, Asset, Font, Icon } from 'expo';
 import AppNavigator from './navigation/AppNavigator';
+import {
+  AdMobBanner,
+  AdMobInterstitial,
+  AdMobRewarded
+} from 'expo';
 
 export default class App extends React.Component {
   state = {
     isLoadingComplete: false,
   };
+
+  componentDidMount(): void {
+    AdMobInterstitial.setTestDeviceID('EMULATOR');
+    // ALWAYS USE TEST ID for Admob ads
+    AdMobInterstitial.setAdUnitID('ca-app-pub-2225047970234229/1719606437');
+
+    AdMobInterstitial.addEventListener('interstitialDidLoad',
+        () => console.log('interstitialDidLoad')
+    );
+
+    AdMobInterstitial.addEventListener('interstitialDidFailToLoad',
+        () => console.log('interstitialDidFailToLoad')
+    );
+
+    AdMobInterstitial.addEventListener('interstitialDidOpen',
+        () => console.log('interstitialDidOpen')
+    );
+    AdMobInterstitial.addEventListener('interstitialDidClose',
+        () => console.log('interstitialDidClose')
+    );
+    AdMobInterstitial.addEventListener('interstitialWillLeaveApplication',
+        () => console.log('interstitialWillLeaveApplication')
+    );
+    this.showInterstitial()
+  }
+
+  componentWillUnmount() {
+    AdMobInterstitial.removeAllListeners();
+  }
+
+  async showInterstitial() {
+    await AdMobInterstitial.requestAdAsync();
+    await AdMobInterstitial.showAdAsync();
+  }
 
   render() {
     if (!this.state.isLoadingComplete && !this.props.skipLoadingScreen) {
