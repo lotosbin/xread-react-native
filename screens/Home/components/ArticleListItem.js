@@ -1,5 +1,6 @@
 import React from "react";
 import moment from "moment";
+import {Card} from 'react-native-material-ui';
 
 import gql from "graphql-tag";
 import ButtonMarkRead from "./ButtonMarkRead";
@@ -24,21 +25,27 @@ const ArticleListItem = ({data: {id, title, summary, link, time, feed,}, query, 
     let {feed_link, feed_title} = feed || {};
     let time_moment = moment(time);
     return (
-        <View key={id}>
+        <View key={id} style={styles.card}>
             <TouchableOpacity onPress={() => WebBrowser.openBrowserAsync(link)} style={styles.helpLink}>
                 <Text style={styles.title_text}>{title} {time_moment.fromNow()} {feed_title || feed_link || ''}</Text>
             </TouchableOpacity>
-            <Text ellipsizeMode="tail" numberOfLines={5}>
-                {summary}
+            <Text ellipsizeMode="tail" numberOfLines={5} textAlignVertical="top">
+                {summary.replace(/^[\s]+/, '')}
             </Text>
             <View style={styles.row}>
                 <ButtonMarkRead id={id} read={'unread'} query={query} variables={variables}/>
                 <ButtonMarkSpam id={id} query={query} variables={variables}/>
             </View>
-        </View>);
+        </View>
+    );
 };
 
 const styles = StyleSheet.create({
+    card: {
+        marginTop: 2, marginBottom: 2, marginLeft: 8, marginRight: 8,
+        padding: 4,
+        backgroundColor: '#00ff0040'
+    },
     row: {
         flexDirection: 'row',
         justifyContent: 'space-around'

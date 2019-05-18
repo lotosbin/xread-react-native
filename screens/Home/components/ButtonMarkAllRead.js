@@ -1,9 +1,8 @@
 import React from "react";
-import {Button} from 'react-native';
 import _ from "lodash";
 import {Mutation} from "react-apollo";
 import {gql} from "apollo-boost";
-
+import {Button} from 'react-native-material-ui';
 let mutationMarkRead = gql`mutation markRead($id:String) {
     markReaded(id:$id){
         id
@@ -15,7 +14,7 @@ type TProps = {
 }
 const ButtonMarkAllRead = ({ids = [], read, query, variables}: TProps) => {
     return <Mutation mutation={mutationMarkRead}>
-        {(markRead, {data}) => (<Button onPress={() => ids.forEach(id => markRead({
+        {(markRead, {data}) => (<Button primary onPress={() => ids.forEach(id => markRead({
                 variables: {id: id},
                 optimisticResponse: {
                     __typename: "Mutation",
@@ -48,7 +47,7 @@ const ButtonMarkAllRead = ({ids = [], read, query, variables}: TProps) => {
                         }
                     }
                 }
-            }))} title={"Mark All Read"}/>
+            }))} text={"Mark All Read"}/>
         )}
     </Mutation>
 };

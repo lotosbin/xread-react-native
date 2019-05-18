@@ -7,7 +7,18 @@ import {
   AdMobInterstitial,
   AdMobRewarded
 } from 'expo';
-
+import {COLOR, ThemeContext, getTheme} from 'react-native-material-ui';
+// you can set your style right here, it'll be propagated to application
+const uiTheme = {
+  palette: {
+    primaryColor: COLOR.green500,
+  },
+  toolbar: {
+    container: {
+      height: 50,
+    },
+  },
+};
 export default class App extends React.Component {
   state = {
     isLoadingComplete: false,
@@ -60,7 +71,9 @@ export default class App extends React.Component {
       return (
         <View style={styles.container}>
           {Platform.OS === 'ios' && <StatusBar barStyle="default" />}
-          <AppNavigator />
+          <ThemeContext.Provider value={getTheme(uiTheme)}>
+            <AppNavigator/>
+          </ThemeContext.Provider>
         </View>
       );
     }
