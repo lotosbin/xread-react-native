@@ -24,6 +24,24 @@ GuessReadStack.navigationOptions = {
         />
     ),
 };
+
+const GuessNormalStack = createStackNavigator({
+    Home: {screen: HomeScreen, params: {priority: 0}},
+});
+
+GuessNormalStack.navigationOptions = {
+    tabBarLabel: 'Guess Normal',
+    tabBarIcon: ({focused}) => (
+        <TabBarIcon
+            focused={focused}
+            name={
+                Platform.OS === 'ios'
+                    ? `ios-information-circle${focused ? '' : '-outline'}`
+                    : 'md-information-circle'
+            }
+        />
+    ),
+};
 const GuessSpamStack = createStackNavigator({
     Home: {screen: HomeScreen, params: {priority: -1}},
 });
@@ -106,9 +124,8 @@ SettingsStack.navigationOptions = {
 
 export default createBottomTabNavigator({
     GuessReadStack,
+    GuessNormalStack,
     GuessSpamStack,
     HomeStack,
     SpamStack,
-    LinksStack,
-    SettingsStack,
 });
