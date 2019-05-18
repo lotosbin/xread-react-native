@@ -25,6 +25,8 @@ import {ApolloProvider, Query} from "react-apollo";
 import {client} from '../apollo'
 import ReadSegmentedControl from "./Home/components/ReadSegmentedControl";
 import ArticleListItem, {fragment_article_list_item} from "./Home/components/ArticleListItem";
+import ButtonMarkAllSpam from "./Home/components/ButtonMarkAllSpam";
+import ButtonMarkAllRead from "./Home/components/ButtonMarkAllRead";
 
 let query = gql`query articles($cursor: String="",$box:String="all",$read:String="all",$priority:Int) {
     articles(last:10,before: $cursor,box:$box,read:$read,priority:$priority) {
@@ -94,6 +96,7 @@ export default class HomeScreen extends React.Component {
                                     that.refetch = refetch;
                                     if (loading) return <Text>Loading...</Text>;
                                     if (error) return <Text>Error :(</Text>;
+                                    const ids = data.articles.edges.map(it => it.node.id) || [];
                                     return <View>
                                         {data.articles.edges.map(({node}) => <ArticleListItem key={node.id} data={node} query={query} variables={variables}/>)}
                                         {data.articles.pageInfo.hasNextPage ? <Button title={"Load More"} onPress={() => fetchMore({
@@ -117,6 +120,11 @@ export default class HomeScreen extends React.Component {
                                                     : previousResult;
                                             }
                                         })}/> : <Text>no more data</Text>}
+                                        {ids.length ?
+                                            <View style={styles.bottom_toolbar}>
+                                                <ButtonMarkAllSpam ids={ids} query={query} variables={variables}/>
+                                                <ButtonMarkAllRead ids={ids} query={query} variables={variables}/>
+                                            </View> : null}
                                     </View>
                                 }}
                             </Query>
@@ -126,39 +134,6 @@ export default class HomeScreen extends React.Component {
             </ApolloProvider>
         );
     }
-
-    _maybeRenderDevelopmentModeWarning() {
-        if (__DEV__) {
-            const learnMoreButton = (
-                <Text onPress={this._handleLearnMorePress} style={styles.helpLinkText}>
-                    Learn more
-                </Text>
-            );
-
-            return (
-                <Text style={styles.developmentModeText}>
-                    Development mode is enabled, your app will be slower but you can use useful development
-                    tools. {learnMoreButton}
-                </Text>
-            );
-        } else {
-            return (
-                <Text style={styles.developmentModeText}>
-                    You are not in development mode, your app will run at full speed.
-                </Text>
-            );
-        }
-    }
-
-    _handleLearnMorePress = () => {
-        WebBrowser.openBrowserAsync('https://docs.expo.io/versions/latest/guides/development-mode');
-    };
-
-    _handleHelpPress = () => {
-        WebBrowser.openBrowserAsync(
-            'https://docs.expo.io/versions/latest/guides/up-and-running.html#can-t-see-your-changes'
-        );
-    };
 }
 
 const styles = StyleSheet.create({
@@ -248,4 +223,8 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#2e78b7',
     },
+    bottom_toolbar: {
+        flexDirection: 'row',
+        justifyContent: 'space-around'
+    }
 });
