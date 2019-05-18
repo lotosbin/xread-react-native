@@ -23,24 +23,9 @@ import {MonoText} from '../components/StyledText';
 import {gql} from "apollo-boost";
 import {ApolloProvider, Query} from "react-apollo";
 import {client} from '../apollo'
-import ButtonMarkRead from "./Home/components/ButtonMarkRead";
-import ButtonMarkSpam from "./Home/components/ButtonMarkSpam";
 import ReadSegmentedControl from "./Home/components/ReadSegmentedControl";
+import ArticleListItem, {fragment_article_list_item} from "./Home/components/ArticleListItem";
 
-export const fragment_article_list_item = gql`fragment fragment_article_list_item on Article{
-    id
-    title
-    summary
-    link
-    time
-    tags
-    box
-    priority
-    feed{
-        title
-        link
-    }
-}`;
 let query = gql`query articles($cursor: String="",$box:String="all",$read:String="all",$priority:Int) {
     articles(last:10,before: $cursor,box:$box,read:$read,priority:$priority) {
         pageInfo{
@@ -110,15 +95,7 @@ export default class HomeScreen extends React.Component {
                                     if (loading) return <Text>Loading...</Text>;
                                     if (error) return <Text>Error :(</Text>;
                                     return <View>
-                                        {data.articles.edges.map(({node: {id, title, link}}) => (
-                                            <View key={id}>
-                                                <TouchableOpacity onPress={() => WebBrowser.openBrowserAsync(link)} style={styles.helpLink}>
-                                                    <Text>{title}</Text>
-                                                </TouchableOpacity>
-                                                <ButtonMarkRead id={id} read={'unread'} query={query} variables={variables}/>
-                                                <ButtonMarkSpam id={id} query={query} variables={variables}/>
-                                            </View>
-                                        ))}
+                                        {data.articles.edges.map(({node}) => <ArticleListItem key={node.id} data={node} query={query} variables={variables}/>)}
                                         {data.articles.pageInfo.hasNextPage ? <Button title={"Load More"} onPress={() => fetchMore({
                                             variables: {
                                                 cursor: data.articles.pageInfo.endCursor

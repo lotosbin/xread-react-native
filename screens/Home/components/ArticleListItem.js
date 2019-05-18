@@ -1,37 +1,11 @@
-import React, {useContext} from "react";
-import styles from "./ArticleListItem.module.css"
+import React from "react";
 import moment from "moment";
-import {Link, withRouter} from "react-router-dom";
 
 import gql from "graphql-tag";
-import Paper from "@material-ui/core/Paper";
-import Typography from "@material-ui/core/Typography";
-import {useTranslation} from "react-i18next";
-import {useMutation} from "react-apollo-hooks";
 import ButtonMarkRead from "./ButtonMarkRead";
 import ButtonMarkSpam from "./ButtonMarkSpam";
-import queryString from "query-string";
-import {ViewModeContext} from "../contexts";
-
-function daysFromNow(date: string) {
-    const m = moment(date);  // or whatever start date you have
-    const today = moment().startOf('day');
-    return Math.round(moment.duration(today - m).asDays());
-}
-
-function days2opacity(days: number): number {
-    if (days < 1) {
-        return 1;
-    } else if (days < 2) {
-        return 0.8
-    } else if (days < 3) {
-        return 0.6
-    } else if (days < 7) {
-        return 0.4
-    }
-    return 0.2;
-}
-
+import {Platform, StyleSheet, Text, TouchableOpacity, View} from "react-native";
+import {WebBrowser} from "expo";
 export const fragment_article_list_item = gql`fragment fragment_article_list_item on Article{
     id
     title
@@ -46,39 +20,118 @@ export const fragment_article_list_item = gql`fragment fragment_article_list_ite
         link
     }
 }`;
-let mutationMarkRead = gql`mutation markRead($id:String) {
-    markReaded(id:$id){
-        id
-    }
-}`;
-const ArticleListItem = ({data: {id, title, summary, link, time, tags = [], feed, box, priority}, onClickItem, match: {params: {box: route_box = "all"}}, location: {search},}) => {
-    const {mode: viewMode} = useContext(ViewModeContext);
-    const {t} = useTranslation("", {useSuspense: false});
-    let {read = "all"} = queryString.parse(search);
-    const markRead = useMutation(mutationMarkRead);
+const ArticleListItem = ({data: {id, title, summary, link, time, feed,}, query, variables}) => {
     let {feed_link, feed_title} = feed || {};
     let time_moment = moment(time);
-    return (<div>
-        <Paper elevation={1} className={styles.container} style={{opacity: days2opacity(daysFromNow(time))}} key={id}>
-            <div>
-                {read !== "readed" ? <ButtonMarkRead read={read} id={id}/> : null} {route_box !== "spam" ? <ButtonMarkSpam id={id}/> : null}
-            </div>
-            <div className={viewMode === "single_line" ? styles.title_single_line : styles.title}>
-                <Typography variant="h5" onClick={async () => {
-                    markRead({variables: {id: id}});
-                    window.open(link, '_blank').opener = null
-                }}>{title}</Typography>
-                {viewMode === "single_line" ? <Typography component="p" onClick={() => onClickItem && onClickItem({id})} className={styles.summary_single_line}>{summary}</Typography> : null}
-                <Typography title={time_moment.calendar()}>{time_moment.fromNow()}</Typography>
-            </div>
-            {viewMode !== "single_line" ? <Typography component="p" onClick={() => onClickItem && onClickItem({id})} className={styles.summary}>{summary}</Typography> : null}
-            <div className={styles.foot}>
-                <Typography>{t('box')}:{t(box)}</Typography>
-                <Typography>{t('priority')}:{t(priority)}</Typography>
-                <Typography className={styles.tags}>{t('tags')}:{tags.map(it => <span key={it} className={styles.tag}><Link to={`/article/tag/${it}`}>{it}</Link></span>)}</Typography>
-                <Typography>{t('feed')}: {feed_title || feed_link || ''}</Typography>
-            </div>
-        </Paper>
-    </div>);
+    return (
+        <View key={id}>
+            <TouchableOpacity onPress={() => WebBrowser.openBrowserAsync(link)} style={styles.helpLink}>
+                <Text style={styles.title_text}>{title} {time_moment.fromNow()} {feed_title || feed_link || ''}</Text>
+            </TouchableOpacity>
+            <Text ellipsizeMode="tail" numberOfLines={5}>
+                {summary}
+            </Text>
+            <View style={styles.row}>
+                <ButtonMarkRead id={id} read={'unread'} query={query} variables={variables}/>
+                <ButtonMarkSpam id={id} query={query} variables={variables}/>
+            </View>
+        </View>);
 };
-export default withRouter(ArticleListItem);
+
+const styles = StyleSheet.create({
+    row: {
+        flexDirection: 'row',
+        justifyContent: 'space-around'
+    },
+    title_text: {
+        fontSize: 18
+    },
+    container: {
+        flex: 1,
+        backgroundColor: '#fff',
+    },
+    developmentModeText: {
+        marginBottom: 20,
+        color: 'rgba(0,0,0,0.4)',
+        fontSize: 14,
+        lineHeight: 19,
+        textAlign: 'center',
+    },
+    contentContainer: {
+        paddingTop: 30,
+    },
+    welcomeContainer: {
+        alignItems: 'center',
+        marginTop: 10,
+        marginBottom: 20,
+    },
+    welcomeImage: {
+        width: 100,
+        height: 80,
+        resizeMode: 'contain',
+        marginTop: 3,
+        marginLeft: -10,
+    },
+    getStartedContainer: {
+        alignItems: 'center',
+        marginHorizontal: 50,
+    },
+    homeScreenFilename: {
+        marginVertical: 7,
+    },
+    codeHighlightText: {
+        color: 'rgba(96,100,109, 0.8)',
+    },
+    codeHighlightContainer: {
+        backgroundColor: 'rgba(0,0,0,0.05)',
+        borderRadius: 3,
+        paddingHorizontal: 4,
+    },
+    getStartedText: {
+        fontSize: 17,
+        color: 'rgba(96,100,109, 1)',
+        lineHeight: 24,
+        textAlign: 'center',
+    },
+    tabBarInfoContainer: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        ...Platform.select({
+            ios: {
+                shadowColor: 'black',
+                shadowOffset: {height: -3},
+                shadowOpacity: 0.1,
+                shadowRadius: 3,
+            },
+            android: {
+                elevation: 20,
+            },
+        }),
+        alignItems: 'center',
+        backgroundColor: '#fbfbfb',
+        paddingVertical: 20,
+    },
+    tabBarInfoText: {
+        fontSize: 17,
+        color: 'rgba(96,100,109, 1)',
+        textAlign: 'center',
+    },
+    navigationFilename: {
+        marginTop: 5,
+    },
+    helpContainer: {
+        marginTop: 15,
+        alignItems: 'center',
+    },
+    helpLink: {
+        paddingVertical: 15,
+    },
+    helpLinkText: {
+        fontSize: 14,
+        color: '#2e78b7',
+    },
+});
+
+export default ArticleListItem;
